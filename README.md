@@ -7,8 +7,17 @@ This repository contains a framework for detecting mitotic figures from hematoxy
 Install OMG-Net:
 
 ```
-pip install git+https://github.com/SZY1234567/Optimised-Mitoses-Generator-Network-OMG-Net.git
-cd Optimised-Mitoses-Generator-Network-OMG-Net
+pip install git+https://github.com/SZY1234567/OMG-Net.git
+cd OMG-Net
+conda env create -f environment.yml
 ```
 
+# Data
+https://figshare.com/projects/OMG-Net_A_Deep_Learning_Framework_Deploying_Segment_Anything_to_Detect_Pan-Cancer_Mitotic_Figures_from_Haematoxylin_and_Eosin-Stained_Slides/218617
 
+# Usage
+## Quick Start
+To run the model on a whole slide image:
+```
+python Inference/CompleteInference.py /path/to/image.svs
+```
