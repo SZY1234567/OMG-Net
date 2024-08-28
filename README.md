@@ -39,6 +39,10 @@ To run the model on a whole slide image:
 ```
 python Inference/CompleteInference.py /path/to/image.svs
 ```
+The checkpoints can be downloaded from AWS S3 bucket via
+```
+aws s3 cp s3://histopathology-checkpoints/ . --recursive --exclude "*" --include "MFDetection*.ckpt"
+```
 We are also developing the front end for implementing the model on our website https://www.octopath.ai/
 ## Training 
 Training on only the mitotic figures and mitotic-like figures
