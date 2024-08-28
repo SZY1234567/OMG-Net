@@ -185,17 +185,7 @@ def complete_inference(config, trainer, local_SVS_PATH, local_result, PROCESSING
     np.savez(f"{local_result[:-4]}_{trainer.global_rank}.npz", masks=cropped_masks.numpy(), coords=coords)
     
     masks_dataset = masks_dataset[masks_dataset['pred_1']>0.5]
-    # ## NMS again - not sure I like it
-    # bboxes = np.zeros((len(masks_dataset), 4))
-    # bboxes[:, 0] = masks_dataset['coords_x'] - config['BASEMODEL']['Input_Size'][0]/2
-    # bboxes[:, 1] = masks_dataset['coords_y'] - config['BASEMODEL']['Input_Size'][1]/2
-    # bboxes[:, 2] = masks_dataset['coords_x'] + config['BASEMODEL']['Input_Size'][0]/2
-    # bboxes[:, 3] = masks_dataset['coords_y'] + config['BASEMODEL']['Input_Size'][1]/2
-    # keep = torchvision.ops.nms(boxes=torch.tensor(np.array(bboxes), dtype=torch.float32),
-    #                            scores=torch.tensor(np.array(masks_dataset['pred_1']), dtype=torch.float32),
-    #                            iou_threshold=0.1).tolist()
 
-    # masks_dataset = masks_dataset.iloc[keep]
     masks_dataset.to_csv(f"{local_result[:-4]}_{trainer.global_rank}.csv", index=False)
     print(masks_dataset)
     print(f"{local_result[:-4]}_{trainer.global_rank}.csv Saved")
