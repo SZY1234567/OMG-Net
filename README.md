@@ -2,6 +2,9 @@
 
 This repository contains a framework for detecting mitotic figures from hematoxylin and eosin-stained whole-slide images. Details of the framework are introduced in the paper: OMG-Net: A Deep Learning Framework Deploying Segment Anything to Detect Pan-Cancer Mitotic Figures from Haematoxylin and Eosin-Stained Slides https://arxiv.org/abs/2407.12773
 
+![Screenshot 2024-08-28 at 10 58 38](https://github.com/user-attachments/assets/100f5359-e1ba-46be-8d3b-f470b664a530)
+
+
 # Installation
 
 Install OMG-Net:
