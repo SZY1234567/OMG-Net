@@ -51,5 +51,9 @@ Please follow the data generation steps to generate the NRRD files required in t
 Please also change the paths to the data in the configuration files accordingly.
 
 ## Data Generation
-
+The training data will be generated from the source format in different datasets by:
+```
+python Utils/GeneratingNRRD.py
+```
+Currently, the whole slide images for the cases in the STMF dataset are not publicly available. 
 
