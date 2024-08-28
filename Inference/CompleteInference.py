@@ -10,7 +10,6 @@ import torch
 import time
 import lightning as L
 import pandas as pd
-from Models.Preprocessing.depreciated.ConvNet import ConvNet as preprocessing_model # old model - use for now.
 from Models.SAM_Classifier import Classifier
 from Models.SAM_Masking import MaskGenerator
 import numpy as np
@@ -153,7 +152,7 @@ def complete_inference(config, trainer, local_SVS_PATH, local_result, PROCESSING
 
     if not os.path.exists(f'{local_result[:-4]}-masks.pth'):
         try:   
-            print('3. Mask Generation')
+            print('2. Mask Generation')
             cropped_masks, centers, indexes = MaskGeneration(tile_dataset_preprocessing, SAM_CHECKPOINT, config)
             time_maskgeneration = time.time()
             if trainer.is_global_zero:  
@@ -168,13 +167,13 @@ def complete_inference(config, trainer, local_SVS_PATH, local_result, PROCESSING
         cropped_masks, centers, indexes = masks_file['cropped_masks'], masks_file['centers'], masks_file['indexes']
 
     try:
-        print('4. Classification')
+        print('3. Classification')
         cell_type_predictions, coords =  CellClassification(trainer, tile_dataset_preprocessing, cropped_masks, centers, indexes, CLASSIFY_CHECKPOINT, config)
     except Exception as e:
         raise RuntimeError("Critical failure during mask classification") from e
         
     masks_dataset             = pd.DataFrame()
-    coords = coords.numpy().astype(int)
+    coords                    = coords.numpy().astype(int)
     masks_dataset['coords_x'] = coords[:, 0]
     masks_dataset['coords_y'] = coords[:, 1]
     masks_dataset['SVS_PATH'] = local_SVS_PATH
