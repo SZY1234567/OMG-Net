@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import torch
 import nrrd
 from PIL import Image
+from monai.data.wsi_reader import WSIReader
 
 def get_bbox_from_mask(mask):
     pos = np.where(mask != 0)
@@ -161,6 +162,60 @@ class DataGeneratorAllCell(torch.utils.data.Dataset):
             return data
         else:
             return data, self.df['class'][id]
+
+class DataGeneratorInf(torch.utils.data.Dataset):
+    def __init__(self, config, masks_dataset, masks, centers, indexes, transform=None):
+        super().__init__()
+        self.config = config
+        self.masks_dataset = masks_dataset
+        self.masks = masks
+        self.indexes = indexes
+        self.centers = centers
+        self.Input_Size = self.config['BASEMODEL']['Input_Size']
+        self.Patch_Size = self.config['BASEMODEL']['Patch_Size']
+        self.transform = transform
+        self.wsi_reader = WSIReader(backend=config['BASEMODEL']['WSIReader'])
+        self.wsi_object_dict = {}
+        
+    def get_wsi_object(self, image_path):
+        if image_path not in self.wsi_object_dict:
+            self.wsi_object_dict[image_path] = self.wsi_reader.read(image_path)
+        return self.wsi_object_dict[image_path]
+
+    def __len__(self):
+        return len(self.masks)
+
+    def __getitem__(self, id):
+
+        patch_id        = int(self.indexes[id])
+        top_left        = [self.masks_dataset['coords_x'][patch_id], self.masks_dataset['coords_y'][patch_id]]
+        wsi_obj         = self.get_wsi_object(self.masks_dataset['SVS_PATH'][patch_id])
+        
+        center          = [self.centers[id][0], self.centers[id][1]]
+        top_left_img    = [int(center[0] - self.Input_Size[0]/2), int(center[1] - self.Input_Size[1]/2)]
+        top_left_img    = [top_left[0] + top_left_img[0], top_left[1] + top_left_img[1]]
+        coords = np.array([top_left_img[0] + self.Input_Size[0]/2, top_left_img[1] + self.Input_Size[1]/2])
+
+        img, meta = self.wsi_reader.get_data(wsi=wsi_obj, location=[top_left_img[1], top_left_img[0]], size=self.Input_Size, level=0)
+        img       = np.swapaxes(img, 0, 2)
+        
+        #img_plot = img.copy()
+
+        data = {}
+     
+        if self.transform:
+            img = self.transform(img)
+
+        data['img'] = img
+
+        if self.config['BASEMODEL']['Mask_Input']:
+            msk = self.masks[id]
+            data['msk'] = torch.as_tensor(msk, dtype=torch.float32).unsqueeze(dim=0)
+
+        data['id'] = torch.as_tensor(id, dtype=torch.int)
+        data['coords'] = torch.as_tensor(coords, dtype=torch.int)
+
+        return data
 
 
 class DataModule(LightningDataModule):
