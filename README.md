@@ -17,7 +17,7 @@ conda env create -f environment.yml
 
 # Data
 All images of mitotic figures and their nuclei contours dilated by the Segment Anything Model are available at:
-https://figshare.com/projects/OMG-Net_A_Deep_Learning_Framework_Deploying_Segment_Anything_to_Detect_Pan-Cancer_Mitotic_Figures_from_Haematoxylin_and_Eosin-Stained_Slides/218617
+https://zenodo.org/records/11521640
 
 The original images and annotations of the open-source datasets can be found via their own repositories:
 
