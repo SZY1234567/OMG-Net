@@ -52,7 +52,7 @@ def get_img_msk(
     )
 
     header['mask'] = np.array(masks[0]).astype('float32')
-    nrrd.write(os.path.join(nrrd_folder, '{}.nrrd'.format(nrrd_file)), img, header, custom_field_map=custom_field_map)
+    nrrd.write(os.path.join(nrrd_folder, nrrd_file), img, header, custom_field_map=custom_field_map)
 
 def save_nrrd_from_df(df, image_folder, nrrd_folder, predictor, dim=[256, 256], vis_level=0, box_dim=[32, 32]):
     for i in range(len(df)):
@@ -70,6 +70,7 @@ def table2df(cursor, table_name):
 
 #Configure Paths
 nrrd_folder        = "/path/to/nrrd"                #Path to save the NRRD files
+final_dataset      = "/path/to/final_dataset"       #Path to save the CSV file of the final dataset
 midog_folder       = "/path/to/MIDOG_PLUS/"         #Path to MIDOG_PLUS
 cmc_folder         = "/path/to/MITOS_WSI_CMC/"      #Path to MITOS_WSI_CMC
 ccmct_folder       = "/path/to/MITOS_WSI_CCMCT/"    #Path to MITOS_WSI_CCMCT
@@ -97,6 +98,8 @@ custom_field_map   = {
     'annotation_label': 'string',
     'mask': 'double matrix'
     }
+
+datasets = []
 
 #Process the MIDOG dataset-----------------------------------------------------------------------------------------------
 print("Processing MIDOG dataset")
@@ -138,6 +141,7 @@ df['coordinateY'] = (df['ymin'] + df['ymax']) / 2
 df.to_csv(dataframe, index=False)
 
 save_nrrd_from_df(df, image_folder, nrrd_folder, predictor, dim, vis_level, box_dim)
+datasets.append(df)
 
 #Process the MITOS_WSI_CMC/MITOS_WSI_CCMCT dataset-----------------------------------------------------------------------------------------------
 print("Processing MITOS_WSI_CMC/MITOS_WSI_CCMCT dataset")
@@ -182,9 +186,11 @@ for dataset in ['MITOS_WSI_CMC', 'MITOS_WSI_CCMCT']:
     df = df.merge(df_Classes, on='agreedClass', how='inner')
     df = df.replace(mitotic_label, 'mitotic figure')
     df.reset_index(drop=True, inplace=True)
+    df['nrrd_file'] = ['{}_{}.nrrd'.format(df['filename'][i].split(".")[0], df['annoId'][i]) for i in range(len(df))]
     df.to_csv(dataframe, index=False)
 
     save_nrrd_from_df(df, image_folder, nrrd_folder, predictor, dim, vis_level, box_dim)
+    datasets.append(df)
 
 #Process the TUPAC16 dataset-----------------------------------------------------------------------------------------------
 print("Processing TUPAC16 dataset")
@@ -225,9 +231,17 @@ df.drop(columns=['guid', 'lastModified', 'deleted', 'type',
                     'description', 'directory', 'uuid', 'exactImageID',
                     'EXACTUSER', 'uid', 'orderIdx', 'coordinateZ', 'color'], inplace=True)
 df = df.replace('Mitose', 'mitotic figure')
+df['nrrd_file'] = ['{}_{}.nrrd'.format(df['filename'][i].split(".")[0], df['annoId'][i]) for i in range(len(df))]
 df.to_csv(dataframe, index=False)
 
 save_nrrd_from_df(df, image_folder, nrrd_folder, predictor, dim, vis_level, box_dim)
+datasets.append(df)
+
+#Merge all datasets-----------------------------------------------------------------------------------------------
+print("Merging datasets")
+df = pd.concat(datasets)
+df.to_csv(os.path.join(final_dataset, "final_dataset.csv"), index=False)
+print("Done")
 
 
 
